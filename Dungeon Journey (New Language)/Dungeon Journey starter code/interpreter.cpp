@@ -133,7 +133,11 @@ int main(int argc,char *argv[]){
 			break;
 		}
 	}
-	if(halt)for(int i=ybound[1];i>=ybound[0];--i){
+	if(xbound[1]>=radius<<1)xbound[1]=radius<<1-1;
+	if(ybound[1]>=radius<<1)ybound[1]=radius<<1-1;
+	if(xbound[0]<0)xbound[0]=0;
+	if(ybound[0]<0)ybound[0]=0;
+	if(1||halt)for(int i=ybound[1];i>=ybound[0];--i){
 		for(int j=xbound[0];j<=xbound[1];++j){
 			if(board[j][i]==0)cout<<'_';
 			else cout<<board[j][i];

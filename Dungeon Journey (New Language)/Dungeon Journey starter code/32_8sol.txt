@@ -41,7 +41,7 @@
 1,5 _,_,L,_
 
 % A hits origin and moves down
-2,5 _,_,U,_
+2,5 3,_,U,_
 
 
 
@@ -52,7 +52,17 @@
 % B hits end of BH
 0,7 7,_,D,L
 
-% move bob to origin, pull alice down
+% move both back to origin
+6,6 _,_,D,L
+
+% hit origin
+6,5 _,_,D,_
+
+
+
+% setup for rectangle traversal
+3,5 4,_,_,D
+4,0 _,_,_,_
 
 % move bob to origin, shift up
 
