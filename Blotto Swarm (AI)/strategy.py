@@ -11,22 +11,27 @@ WARNING: Do not print anything to stdout. It will break the grading script!
 """
 
 def strategy(ally: list, enemy: list, offset: int) -> int:
-    # Implement me!
+    # gravitate to tower - very simplistic
     return offset
 
 def strategy_heuristic(ally: list, enemy: list, offset: int) -> int:
-    # somewhat better?
+    # primarily, gravitate to tower, however, if a tower is already full then
+    # offload some acceptable amount of soldiers to distribute
     if offset == 0:
+        # if tower already holds majority then offload
         if ally[3] > enemy[3] + 2:
             if random.random() < (ally[3] - enemy[3] - 2)/ally[3]:
                 return 1 if random.random() > .5 else -1
         return 0
+    # if closest tower needs allies gravitate
     if enemy[3+offset] > ally[3+offset]:
         if random.random() < (enemy[3+offset] - ally[3+offset] + 1)/ally[3]:
             return offset
+    # if farther tower needs allies gravitate
     if enemy[3-offset*2] > ally[3-offset*2]:
         if random.random() < (enemy[3+offset*2] - ally[3+offset*2] + 1)/ally[3]:
             return -offset
+    # randomwalk
     return random.randint(-1, 1)
 
 def bad_strategy(ally: list, enemy: list, offset: int) -> int:
