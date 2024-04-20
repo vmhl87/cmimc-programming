@@ -1,0 +1,5 @@
+% move right until travel over nonzero cell
+0,0 _,_,_,R
+% if find a cell with 1 halt
+0,1 _,2,_,_
+0,2 _,_,_,_
