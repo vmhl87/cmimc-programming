@@ -15,11 +15,12 @@ def strategy(ally: list, enemy: list, offset: int) -> int:
     return offset
 
 def strategy_heuristic(ally: list, enemy: list, offset: int) -> int:
+    defense = 0.3
     # primarily, gravitate to tower, however, if a tower is already full then
     # offload some acceptable amount of soldiers to distribute
     if offset == 0:
         # if tower already holds majority then offload
-        if random.random() < (ally[3] - enemy[3] - 1)/ally[3]:
+        if random.random() < (ally[3] - enemy[3] - 1 + (enemy[2]+enemy[4])*defense)/ally[3]:
             return 1 if random.random() > .5 else -1
         return 0
     # if closest tower needs allies gravitate
