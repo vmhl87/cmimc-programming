@@ -1,0 +1,61 @@
+% push bob up one and set start of AH
+0,0 2,_,_,D
+
+% set start of BH and move A
+2,0 _,2,R,_
+
+
+
+% move A right and leave trail of 1
+0,2 1,_,R,_
+
+% when A reaches 1, set start of BH to 4, move B
+1,2 _,4,_,R
+
+
+
+% move B right and leave trail of 1
+1,0 _,1,_,R
+
+% when B reaches 1, set end of BH to 3, end of AH to 3, move A down
+1,1 3,3,U,_
+
+
+
+% move A down and B left
+0,3 4,7,U,L
+0,1 4,6,U,L
+
+% when B hits start of BH mark end of AV with 5 and move down
+0,4 5,_,D,_
+
+
+
+% move A back up AV
+4,4 _,_,D,_
+
+% A hits top of AV
+3,4 _,5,L,_
+
+% shift A back to origin
+1,5 _,_,L,_
+
+% A hits origin and moves down
+2,5 _,_,U,_
+
+
+
+% move A down and B right
+0,5 6,_,U,R
+0,6 6,_,U,R
+
+% B hits end of BH
+0,7 7,_,D,L
+
+% move bob to origin, pull alice down
+
+% move bob to origin, shift up
+
+% row alice down, move bob
+
+% write
