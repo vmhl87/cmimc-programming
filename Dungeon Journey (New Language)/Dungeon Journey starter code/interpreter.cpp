@@ -59,16 +59,17 @@ int main(int argc,char *argv[]){
 				buf=buf*10+x-'0';
 				continue;
 			}
-			if(x==','){
+			if(x=='_')buf=-1;
+			else if((x>='0'&&x<='9')||x=='U'||x=='D'||x=='R'||x=='L')
+				buf=buf*10+x-'0';
+			else{
 				if(o==0)e.set[0]=buf;
 				if(o==1)e.set[1]=buf;
 				if(o==2)fil(buf,0,&e);
 				if(o==3)fil(buf,1,&e);
 				buf=0;++o;
-				continue;
+				if(o==4)break;
 			}
-			if(x=='_')buf=-1;
-			else buf=buf*10+x-'0';
 		}
 		if(states.count(c))
 			cout<<"Duplicate transformation "<<c.first<<','<<c.second<<'\n';

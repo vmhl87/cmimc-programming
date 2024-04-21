@@ -66,8 +66,6 @@
 
 
 
-% rectangle traversal
-
 % when starting off, set A to 9, trail B to 8
 6,0 9,8,R,_
 
