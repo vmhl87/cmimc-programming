@@ -62,10 +62,30 @@
 
 % setup for rectangle traversal
 3,5 4,_,_,D
-4,0 _,_,_,_
+4,0 _,_,U,_
 
-% move bob to origin, shift up
 
-% row alice down, move bob
 
-% write
+% rectangle traversal
+
+% when starting off, set A to 9, trail B to 8
+6,0 9,8,R,_
+
+% when A steps, B steps next to match
+0,8 8,_,_,R
+
+% then A steps again
+8,0 _,8,R,_
+
+% A hits right endpoint, move left
+4,8 _,_,L,_
+8,8 _,_,L,_
+
+% hit left endpoint and shift down
+9,8 _,_,U,R
+
+
+
+% win condition???
+7,0 _,1,_,_
+7,1 _,_,_,_
