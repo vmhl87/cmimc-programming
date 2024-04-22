@@ -31,8 +31,9 @@ void fil(int b,int p,state *e){
 }
 
 int main(int argc,char *argv[]){
+	string NE="\e[0m",GR="\e[32m",RE="\e[31m",CY="\e[36m",YL="\e[33m";
 	if(argc<2){
-		cout<<"Too few arguments\n";
+		cout<<RE<<"Too few arguments\n"<<NE;
 		return 0;
 	}
 	fstream sol(argv[1]);
@@ -72,13 +73,14 @@ int main(int argc,char *argv[]){
 			}
 		}
 		if(states.count(c))
-			cout<<"Duplicate transformation "<<c.first<<','<<c.second<<'\n';
+			cout<<RE<<"Duplicate transformation "<<c.first<<','
+				<<c.second<<NE<<'\n';
 		else states[c]=e;
 	}
 	int radius=100;
 	if(argc>3){
 		radius=stoi(argv[3]);
-		cout<<"Using radius "<<radius<<'\n';
+		cout<<CY<<"Using radius "<<radius<<NE<<'\n';
 	}
 	++radius;
 	vector<vector<int>> board(radius<<1,vector<int>(radius<<1,0));
@@ -98,18 +100,20 @@ int main(int argc,char *argv[]){
 	int days=10000;
 	if(argc>4){
 		days=stoi(argv[4]);
-		cout<<"Running on maximum "<<days<<" days\n";
+		cout<<CY<<"Running on maximum "<<days<<" days\n"<<NE;
 	}
 	int a[]={radius,radius},b[]={radius,radius},
 		xbound[]={radius,radius},ybound[]={radius,radius};
 	bool halt=0;
 	while(days--){
 		if(a[0]<0||a[0]>=radius<<1){
-			cout<<"Alice out of bounds - "<<a[0]-radius<<','<<a[1]-radius<<'\n';
+			cout<<RE<<"Alice out of bounds - "<<a[0]-radius<<','
+				<<a[1]-radius<<NE<<'\n';
 			break;
 		}
 		if(b[0]<0||b[0]>=radius<<1){
-			cout<<"Bob out of bounds - "<<b[0]-radius<<','<<b[1]-radius<<'\n';
+			cout<<RE<<"Bob out of bounds - "<<b[0]-radius
+				<<','<<b[1]-radius<<NE<<'\n';
 			break;
 		}
 		pair<int,int> s=make_pair(board[a[0]][a[1]],board[b[0]][b[1]]);
@@ -130,7 +134,7 @@ int main(int argc,char *argv[]){
 			ybound[0]=(b[1]<ybound[0]?b[1]:ybound[0]);
 			ybound[1]=(b[1]>ybound[1]?b[1]:ybound[1]);
 		}else{
-			cout<<"Missing rule "<<s.first<<','<<s.second<<'\n';
+			cout<<RE<<"Missing rule "<<s.first<<','<<s.second<<NE<<'\n';
 			break;
 		}
 	}
@@ -140,8 +144,11 @@ int main(int argc,char *argv[]){
 	if(ybound[0]<0)ybound[0]=0;
 	if(1||halt)for(int i=ybound[1];i>=ybound[0];--i){
 		for(int j=xbound[0];j<=xbound[1];++j){
+			if(j==a[0]&&i==a[1])cout<<YL;
+			else if(j==b[0]&&i==b[1])cout<<GR;
 			if(board[j][i]==0)cout<<'_';
 			else cout<<board[j][i];
+			cout<<NE;
 		}
 		cout<<'\n';
 	}
