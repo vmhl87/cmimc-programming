@@ -2,7 +2,8 @@ import networkx as nx
 import random
 
 
-class BaseCriminal:
+# Based fr fr
+class BasedCriminal:
     def __init__(
         self, edge_list: list[tuple[int, int, int]], begin: int, ends: list[int]
     ) -> None:
@@ -32,8 +33,7 @@ class BaseCriminal:
         pass
 
 
-# Starter strategy
-class RandomCriminal(BaseCriminal):
+class RandomCriminal(BasedCriminal):
     def __init__(self, edge_list, begin, ends):
         self.edge_list = edge_list
         self.begin = begin
@@ -53,3 +53,72 @@ class RandomCriminal(BaseCriminal):
             ),
             random.randint(0, budget),
         )
+
+class BaseCriminal(BasedCriminal):
+    def __init__(self, edge_list, begin, ends):
+        self.edge_list = edge_list
+        self.begin = begin
+        self.ends = ends
+        
+        self.in_degrees = {}
+        self.out_degrees = {}
+        
+        self.adj_list = {}
+
+        for i in range(0, 8 * 15 + 1):
+            self.in_degrees[i] = 0
+            self.out_degrees[i] = 0
+
+            self.adj_list[i] = {}
+
+        for (u, v, w) in self.edge_list:
+            self.in_degrees[v] = self.in_degrees[v] + 1
+            self.out_degrees[u] = self.out_degrees[u] + 1
+
+            self.adj_list[u] = self.adj_list.get(u, {})
+            self.adj_list[u][v] = w
+
+        for i in range(0, 8 * 15 + 1):
+            assert(len(self.adj_list[i]) == self.out_degrees[i])
+
+    def strategy(self, edge_updates, vertex_count, budget):
+        # Update weights
+        for (u, v) in edge_updates:
+            self.adj_list[u][v] += edge_updates[(u, v)]
+
+        assignment = (0, 0, 0)
+        best_score = 0
+
+        for i in vertex_count:
+            population = vertex_count[i]
+            # This can probably be improved upon a lot later but we'll see
+
+            # If the outdegree is greater than or equal to 2, we we shall assign
+            # a penalty corresponding to the difference between the two smallest
+            # edge weights -> this guarantees population * min edge weight
+
+            # If there's only one edge then the answer is trivial trust trust
+
+            # This greedy assignment of weights likely fails to take into that
+            # the students could move to a better spot for us the future (say an
+            # outdegree of 1 vertex) and it also doesn't communicate well with the
+            # other criminal.
+
+            if self.out_degrees[i] == 0:
+                continue
+
+            if self.out_degrees[i] == 1:
+                expected_score = population * budget
+                s = (i, list(self.adj_list.keys())[0], budget)
+            else:
+                nexts = sorted(self.adj_list[i].keys(), key=lambda v: self.adj_list[i][v])
+                weights = sorted(self.adj_list[i].values())
+                expected_score = population * min(budget, weights[1] - weights[0])
+                s = (i, nexts[0], min(budget, weights[1] - weights[0]))
+
+            if expected_score > best_score:
+                best_score = expected_score
+                assignment = s
+
+        return assignment
+                
