@@ -78,7 +78,6 @@ def score(board): # return current score for each player
             if d:
                 scores[board[pos]] += TABLE[d]
     return scores
-    
 
 def greedy_bot_move(board_copy, player):
     

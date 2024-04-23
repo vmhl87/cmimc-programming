@@ -1,0 +1,21 @@
+% expand staircase
+0,0 2,_,_,D
+2,0 3,2,_,_
+
+% if 1 on bottom row halt
+1,0 2,3,_,_
+
+% run up
+3,2 _,_,D,_
+0,2 _,_,D,_
+
+% run down
+2,2 3,_,U,_
+0,3 _,_,U,_
+
+% expand
+3,3 _,_,R,R
+
+% if hit halt
+1,2 2,3,_,_
+2,3 _,_,_,_
