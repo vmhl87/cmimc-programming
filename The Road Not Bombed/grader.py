@@ -1,5 +1,7 @@
 import random
-from strategy import Planner
+from strategy import SamplingPlanner, BlurPlanner, Planner
+import time
+from math import sqrt
 
 """
 Modify the parameters below for different tasks
@@ -22,9 +24,15 @@ bd = 0.25  # bomb density
 # bd = 0.1 # bomb density
 
 rng_grader = random.Random()  # use this for generating fixed setup
-rng_grader.seed(19260817)
+# rng_grader.seed(19260817)
+rng_grader.seed(19290817)
 
-VERBOSE = True  # print more details
+# Flush output
+save_print = print
+def print(*args):
+    pass
+
+VERBOSE = False  # print more details
 LAST = True  # whether to print the last query made in each TC
 n = 16  # board size is n*n
 q = 100  # number of queries
@@ -72,6 +80,7 @@ def drawState(n, q, bombs, pairs, plan, score, queryList):
                 else:
                     mapp[i][j] = "#"  # Surivivng Road
 
+    print(pairs)
     for i in range(len(pairs)):
         mapp[pairs[i][0][0]][pairs[i][0][1]] = i
         mapp[pairs[i][1][0]][pairs[i][1][1]] = i
@@ -189,7 +198,34 @@ def dfsComponent(x, y, n, roads, visRoads):
     dfsComponent(x, y + 1, n, roads, visRoads)
 
 
-soln = Planner()
-pairs, bombs = generateSetup(n, p, bd)
+trials = 1
+scores = []
 
-runGrader(soln, pairs, bombs)
+start_time = time.time()
+for i in range(trials):
+    soln = Planner()
+    pairs, bombs = generateSetup(n, p, bd)
+
+    scores.append(runGrader(soln, pairs, bombs))
+
+end_time = time.time()
+
+elapsed = end_time - start_time
+save_print("Seconds elapsed: ", round(elapsed, 3))
+
+mean = sum(scores) / trials
+
+save_print("Mean score: ", round(mean, 3))
+
+variance = 0
+
+for s in scores:
+    variance += (s - mean) ** 2 / max(trials - 1, 1)
+
+std = sqrt(variance)
+
+# A t-value for a 95% confidence interval with 49 degrees of freedom
+t_star = 2.009575
+
+save_print("Score standard deviation: ", round(std, 3))
+save_print("Confidence interval: ", (round(mean - t_star * std / sqrt(trials), 3), round(mean + t_star * std / sqrt(trials), 3)))
