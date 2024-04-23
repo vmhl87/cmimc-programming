@@ -85,16 +85,19 @@ int main(int argc,char *argv[]){
 	++radius;
 	vector<vector<int>> board(radius<<1,vector<int>(radius<<1,0));
 	if(argc>2){
-		int buf[]={0,0,0};
+		int buf[]={0,0,0},sign=1;
 		string s=argv[2];s+=' ';
 		int o=0;
 		for(char x:s){
-			if(x==',')++o;
-			else if(x==' '){
+			if(x==','){
+				buf[o]*=sign;sign=1;
+				++o;
+			}else if(x==' '){
 				board[buf[0]+radius][buf[1]+radius]=buf[2];
 				for(int i=0;i<3;++i)buf[i]=0;
 				o=0;
-			}else buf[o]=buf[o]*10+x-'0';
+			}else if(x=='-')sign=-1;
+			else buf[o]=buf[o]*10+x-'0';
 		}
 	}
 	int days=10000;
