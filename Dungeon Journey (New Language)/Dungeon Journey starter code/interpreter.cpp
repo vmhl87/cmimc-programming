@@ -138,8 +138,8 @@ int main(int argc,char *argv[]){
 			break;
 		}
 	}
-	if(xbound[1]>=radius<<1)xbound[1]=radius<<1-1;
-	if(ybound[1]>=radius<<1)ybound[1]=radius<<1-1;
+	if(xbound[1]>=radius<<1)xbound[1]=(radius<<1)-1;
+	if(ybound[1]>=radius<<1)ybound[1]=(radius<<1)-1;
 	if(xbound[0]<0)xbound[0]=0;
 	if(ybound[0]<0)ybound[0]=0;
 	if(1||halt)for(int i=ybound[1];i>=ybound[0];--i){
