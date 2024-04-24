@@ -14,7 +14,7 @@ def strategy(ally: list, enemy: list, offset: int) -> int:
     # gravitate to tower - very simplistic
     return offset
 
-def strategy_heuristic(ally: list, enemy: list, offset: int) -> int:
+def strategy_heuristic_old(ally: list, enemy: list, offset: int) -> int:
     defense = 0.3
     # primarily, gravitate to tower, however, if a tower is already full then
     # offload some acceptable amount of soldiers to distribute
@@ -43,6 +43,56 @@ def random_strategy(ally: list, enemy: list, offset: int) -> int:
     # A random strategy to use in your game
     return random.randint(-1, 1)
 
+stat = 0
+oa = 0
+oe = 0
+jl = False
+
+def strategy_heuristic(ally: list, enemy: list, offset: int) -> int:
+    global stat, oa, oe, jl
+    defense = 3
+    sac = 1.8
+    if stat > 5: sac = 1
+    # primarily, gravitate to tower, however, if a tower is already full then
+    # offload some acceptable amount of soldiers to distribute
+    if offset == 0:
+        jl = False
+        # triage
+        if enemy[3] > ally[3] * sac:
+            stat = 0
+            jl = True
+            return 1 if random.random() > .5 else -1
+        # if tower already holds majority then offload
+        if random.random() < (ally[3] - enemy[3] -1 -
+                (enemy[2]+enemy[4])*defense)/ally[3]:
+            stat = 0
+            return 1 if random.random() > .5 else -1
+        if oa == ally[3] and oe == enemy[3]: stat += 1
+        else: stat = 0
+        oa = ally[3]
+        oe = enemy[3]
+        return 0
+    stat = 0
+    # if closest tower needs allies gravitate
+    if enemy[3+offset] > ally[3+offset] and not jl:
+        if random.random() < (enemy[3+offset] - ally[3+offset] + 1)/ally[3]:
+            return offset
+    jl = False
+    # if farther tower needs allies gravitate
+    if enemy[3-offset*2] > ally[3-offset*2]:
+        if random.random() < (enemy[3+offset*2] - ally[3+offset*2] + 1)/ally[3]:
+            return -offset
+    # randomwalk
+    return random.randint(-1, 1)
+
+def bad_strategy(ally: list, enemy: list, offset: int) -> int:
+    # A bad strategy to use in your game
+    return 1 if offset == 0 else -offset
+
+def random_strategy(ally: list, enemy: list, offset: int) -> int:
+    # A random strategy to use in your game
+    return random.randint(-1, 1)
+
 
 def get_strategies():
     """
@@ -53,6 +103,6 @@ def get_strategies():
 
     In the official grader, only the first element of the list will be used as your strategy.
     """
-    strategies = [strategy_heuristic, strategy]
+    strategies = [strategy_heuristic, strategy_heuristic_old, strategy]
 
     return strategies

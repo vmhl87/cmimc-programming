@@ -1,4 +1,5 @@
 import json
+import sys
 import game2dboard
 
 bd = game2dboard.Board(8, 9)
@@ -7,7 +8,7 @@ bd.grid_color = "DarkSlateBlue"
 bd.cell_color = "LightCyan"
 bd.cell_size = 65
 
-f = open("match.json")
+f = open(sys.argv[1])
 j = json.load(f)
 
 game_num = 0
