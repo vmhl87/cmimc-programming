@@ -1,0 +1,21 @@
+% init
+0,0 2,_,D,_
+0,2 3,_,D,_
+1,2 _,_,U,_
+3,2 _,_,U,_
+
+% find untraversed row
+2,2 _,_,D,D
+4,4 _,_,D,D
+
+% begin row traversal
+3,3 _,_,_,R
+3,0 _,_,_,R
+% shift down
+3,1 4,_,U,U
+4,0 _,_,U,U
+4,1 _,_,U,U
+
+% WIP shift right
+2,0 _,3,_,_
+2,3 _,_,_,L
