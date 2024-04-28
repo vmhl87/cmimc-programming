@@ -101,7 +101,9 @@ import sys
 # TODO: Implement counting of the spots that we have queried to weight the
 # probability of choosing them again in the future. Probably I'll have to make
 # my own weighted sampler because random.choices uses sampling with replacement
-# because idk it's probably easier to implement
+# because idk it's probably easier to implement <- DONE
+
+# Wow I really need to stop yapping fr.
 
 # Weighting type 1
 def count_to_weight(count):
@@ -187,29 +189,49 @@ class BlurPlanner:
             ])
 
         self.critical_points = []
+
+        # self.fill_critical_points_centering()
+        self.fill_critical_points_interpolating()
         
+        self.bd = bd
+
+        # queried is a list of tuples of weights and thresholds potentially
+        self.queried = []
+
+    def fill_critical_points_centering(self):
         for [i, j] in self.pairs:
             self.critical_points.append((i[0], i[1]))
             self.critical_points.append((j[0], j[1]))
 
         buffer = []
         for point in self.critical_points:
-            center = self.n // 2
-            x = (point[0] + center) // 2
-            y = (point[1] + center) // 2 
-            buffer.append((x, y))
+            center = self.n / 2
+            midx = (point[0] + center) / 2
+            midy = (point[1] + center) / 2 
+
+            buffer.append((midx, midy))
 
         # Perhaps interpolate between points more so we can make the decay more
         # strict?
         for point in buffer:
             self.critical_points.append(point)
             
-        self.critical_points.append((self.n // 2, self.n // 2))
+        self.critical_points.append((self.n / 2, self.n / 2))
         
-        self.bd = bd
+    def fill_critical_points_interpolating(self):
+        for [i, j] in self.pairs:
+            leftx, lefty = i[0], i[1]
+            rightx, righty = j[0], j[1]
 
-        # queried is a list of tuples of weights and thresholds potentially
-        self.queried = []
+            midx, midy = (leftx + rightx) / 2, (lefty + righty) / 2
+            leftmidx, leftmidy = (leftx + midx) / 2, (lefty + midy) / 2
+            rightmidx, rightmidy = (rightx + midx) / 2, (righty + midy) / 2
+
+            self.critical_points.append((leftx, lefty))
+            self.critical_points.append((midx, midy))
+            self.critical_points.append((leftmidx, leftmidy))
+            self.critical_points.append((rightmidx, rightmidy))
+            self.critical_points.append((rightx, righty))
 
     def decay(self, dist):
         return 1 / (dist ** 2 + 1)
@@ -241,7 +263,7 @@ class BlurPlanner:
         prev = None
 
         best_threshold = 0
-        cap_threshold = 0.75
+        cap_threshold = 1.5
 
         for i, ok in enumerate(queryOutputs):
             if ok:
@@ -268,7 +290,7 @@ class BlurPlanner:
 
         result = self.render(prev[0], prev[1])
 
-        # print(prev[1])
+        # print("Threshold:", prev[1])
         # pretty_print(result)
 
         return result
