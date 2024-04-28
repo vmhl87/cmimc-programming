@@ -1,0 +1,46 @@
+\documentclass[a4paper, 12pt]{article}
+
+\usepackage{chirpstyle}
+
+\begin{document}
+
+\section*{The Road Not Bombed}
+
+\subsection*{Ideas}
+
+\begin{itemize}
+    \item How many paths going from \( (x_1, y_1) \) to \( (x_2, y_2) \) pass through \( (x_3, y_3) \)? It surely can't be the same for all of them right
+    \item Hmmm if we are able to calculate simply the number of paths going from one point to another then we aren't quite able to calculate the number of paths containing (it'll overcount a lot because we don't account for overlap when we should) but it's still a step in the right direction? I wonder if these probabilities are actually even significant.
+    \item If we can remove a tile and still have things work, does it necessarily follow that we have better luck removing tiles close to/farther away from that one?
+    \item Lmao what is the probability that a random sample of \( 100 \) points actually works well okay we don't really want to choose \( 100 \) random points because that doesn't give us connectivity in the case that they're like diagonal or even completely disjoint so what if we pick like orthogonal adjacent neighbors randomly does that even help us. I mean we still need to make sure that we like include a path to get to everyone but like I mean it's worth a shot probably hopefully we also want to probably get squares in the middle since those are far more accessible so like maybe we get the minimum spanning tree and then add stuff on from there
+    \item Another strategy could just be randomly sampling blocks of like size \( k \times k \) and then deleting them but I'm not sure that would be very productive ngl
+    \item Let \( p \) be the independent probability that a square is a bomb. If we consider like a line through the grid that puts roads only for \( k \) points then I suppose we can get upper bounds for the probability that everything is reachable.
+        \[
+            P(\text{win}) \le P(\text{at least one of the } k \text{ places does not have a bomb}) = 1 - p^k
+        .\]
+        Actually this isn't quite true since like you could have cases where the open spots are covered by bombs, which is actually a little disappointing. I suppose this is like an approximate probability. But I mean it's roughly \( 1 \) anyways so this is a terrible upper bound lmao
+
+    \item I mean I feel like the problem is that even if we assign probabilities arbitrary or even close to the actual theoretical probabilities for like the proportion of paths that contain the point, I'm not sure how useful they'll be because you need a combination of both the inside and outside points. Or maybe you don't? Let's try coding something to see idk man. What if I do someting really jank oh man. For each \( k \), let \( (x_k, y_k) \) correspond to each of the points in the pairs and potentially any other points we decide to include. For some grid element \( (x, y) \) assign the proportion
+        \[
+            \theta (x, y) := \sum_{k} c_k \cdot \textsf{decay}\left( (x - x_k)^2 + (y - y_k)^2 \right)
+        ,\]
+        where \( c_k \) denote some weight corresponding to the \( k \)th point. For our purposes, we find that
+        \[
+            \textsf{decay}(d) := \frac{1}{d^2 + 1}
+        \]
+        works well.
+        
+        Then let the decision of whether or not we include some point be decided by \( \textsf{threshold}( \theta (x, y)) \), where \( \textsf{threshold} \) is some activation function. In each of the queries, we may tweak the \( c_k \) coefficients to get a hopefully better answer. Gradient descent :flushed:? Perhaps we may initially set \( c_k = 1 \) for all \( k \).
+
+    \item Hmmmm it's a bit finnicky but like there are a couple choices for \( \textsf{decay} \) that we can use ngl.
+
+    \item Observe that when sampling, we wish to maximize the expected value of bombs found. If we choose to sample \( k \) bombs, this expected value is given by \( k p^k \), so we wish to optimize this. \textcolor{red}{Actually this is not true because we don't only want to remove bombs but also extraneous path cells so yeah nvm.} It is interesting to note that the arg max of this function, however, is contained in \( [0, 1] \) for both \( p = 0.1 \) and \( p = 0.25 \)
+
+    \item When sampling, we should probably decrease the sample size as the number of queries we have gets lower because like its definitely more likely to fail.
+
+    \item Suppose there exists some most optimal path. Is it possible to assign probabilities to things so that we can find this? I assume not because like we can remove places on the most optimal path and still be able to traverse things.
+
+    \item Is there any way of just locating the bombs using what we have so that we can construct the most optimal path ourselves programmatically?
+\end{itemize}
+
+\end{document}

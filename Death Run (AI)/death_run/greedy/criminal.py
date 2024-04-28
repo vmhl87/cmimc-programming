@@ -5,8 +5,8 @@ import random
 # Based fr fr
 class BasedCriminal:
     def __init__(
-        self, edge_list: list[tuple[int, int, int]], begin: int, ends: list[int]
-    ) -> None:
+        self, edge_list
+    ):
         """
         :param edge_list: A list of tuples representing the edge list of the graph. Tuples are of the
         form (u, v, w), where (u, v) specifies that an edge between vertices u and v exist, and w is the
@@ -18,10 +18,10 @@ class BasedCriminal:
 
     def strategy(
         self,
-        edge_updates: dict[tuple[int, int], int],
-        vertex_count: dict[int, int],
-        budget: int,
-    ) -> tuple[int, int, int]:
+        edge_updates,
+        vertex_count,
+        budget
+    ):
         """
         :param edge_updates: A dictionary where the key is an edge (u, v) and the value is how much that edge's weight increased in the previous round.
         Note that this only contains information about edge updates in the previous round, and not rounds before that.
@@ -113,6 +113,9 @@ class BaseCriminal(BasedCriminal):
             else:
                 nexts = sorted(self.adj_list[i].keys(), key=lambda v: self.adj_list[i][v])
                 weights = sorted(self.adj_list[i].values())
+
+                # If we're making the edge weights of the lightest two the same, then perhaps the edge that we weight isn't always being picked so like let's see how this does idk.
+                # Okay yeah nevermind it's folding hard
                 expected_score = population * min(budget, weights[1] - weights[0])
                 s = (i, nexts[0], min(budget, weights[1] - weights[0]))
 

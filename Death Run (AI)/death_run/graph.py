@@ -4,8 +4,10 @@ import matplotlib.pyplot as plt
 
 
 def generate_graph(
-    dim: tuple[int, int], weight_range: tuple[int, int], path: str | None = None
-) -> tuple[list[tuple[int, int, int]], int, list[int]]:
+    dim,
+    weight_range,
+    path = None
+):
     """Generates a directed acyclic graph with the specified dimensions. The width specifies how many layers to the graph.
     The height specifies the number of vertices in each layer. Vertices between adjacent layers are connected with a
     probability of 1/2. Edges are directed from the previous layer to the next. Each edge is assigned a weight from the
@@ -82,7 +84,7 @@ def generate_graph(
     return edge_list, 0, prev_layer
 
 
-def edge_list_to_nx(edge_list: list[int, int, int]):
+def edge_list_to_nx(edge_list):
     """
     Converts a weighted edge list to a NetworkX graph.
 

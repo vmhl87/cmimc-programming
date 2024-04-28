@@ -1,6 +1,6 @@
 import random
 from copy import deepcopy
-from math import sqrt
+from math import sqrt, floor, log
 import sys
 
 # How many paths going from (x1, y1) to (x2, y2) contain the point
@@ -30,7 +30,10 @@ import sys
 # Another strategy could just be randomly sampling blocks of like size k by k
 # and then deleting them but I'm not sure that would be very productive ngl
 
-# TODO: Make another planner that literally just dual wields strategies lmao because like we can generate things with the blur initially perchance (like binary search to find the best threshold using only a couple queries) and then use the sampling strategy to take things away perhaps that works better
+# TODO: Make another planner that literally just dual wields strategies lmao
+# because like we can generate things with the blur initially perchance (like
+# binary search to find the best threshold using only a couple queries) and
+# then use the sampling strategy to take things away perhaps that works better
 # Okay this is kinda done
 
 # Okay wait wait what if we did some extra after processing so that if we have
@@ -75,6 +78,65 @@ import sys
 # path is removed and the query is successful, we know we can remove literally
 # everything in that path
 
+# Wait perhaps a more performant way to do this is possible because perhaps
+# the really slow DFS where we consider all paths isn't the most performant way
+# of doing things.
+
+# We may observe the paths in the query based on the number of neighbors they
+# have that are colored in and form a new graph based on it. More specifically,
+# let all points with 3 or 4 neighbors be vertices on a graph as well as the
+# specific pair points, and the paths between them with vertices that contain 1
+# or 2 neighbors can be represented as the edges. This way, the paths that
+# don't lead anywhere aren't even considered as edges in this graph and then we
+# can just do DFS like normal on the connected components?
+
+# Okay well I think one has to make this idea a bit more precise and
+# potentially the number of neighbors isn't the best way to decide the control
+# points but I'm curious as to whether this preprocessing will actually speed
+# up the slower DFS any more to be useful enough. I mean it's essentially the
+# same sort of algorithm except we're compressing the graph in a way I suppose
+# so hopefully that will help with the compute time.
+
+
+# TODO: Implement counting of the spots that we have queried to weight the
+# probability of choosing them again in the future. Probably I'll have to make
+# my own weighted sampler because random.choices uses sampling with replacement
+# because idk it's probably easier to implement <- DONE
+
+# Wow I really need to stop yapping fr.
+
+# Weighting type 1
+def count_to_weight(count):
+    if count >= 5:
+        return 0.05
+
+    return [1, 0.8, 0.4, 0.2, 0.1][count]
+
+def weighted_sampler(points, weights, n):
+    assert len(points) == len(weights)
+
+    n = min(len(points), n)
+
+    sample = set()
+    total = sum(weights)
+
+    while len(sample) < n:
+        r = random.uniform(0, 1) * total
+
+        for i, w in enumerate(weights):
+            if points[i] in sample:
+                continue
+
+            if r < w:
+                sample.add(points[i])
+                # Remember to subtract the weights properly dawg
+                total -= w
+                break
+            else:
+                r -= w
+
+    return list(sample)
+
 def pretty_print(query):
     for y in range(16):
         for x in range(16):
@@ -96,6 +158,8 @@ class Planner:
 
     def query(self, q, queryOutputs):
         START = 95
+        prev = None
+
         if q > START:
             result = self.blur_strategy.query(q, queryOutputs)
             self.queried.append(result)
@@ -106,7 +170,11 @@ class Planner:
             for qu in self.queried:
                 self.sample_strategy.queried.append(qu)
 
-        return self.sample_strategy.query(q, queryOutputs)
+            for i, (query, threshold) in enumerate(self.blur_strategy.queried):
+                if prev is None or threshold > prev[1]:
+                    prev = (self.queried[i], threshold)
+
+        return self.sample_strategy.query(q, queryOutputs, None if prev is None else prev[0])
 
 class BlurPlanner:
     def setup(self, pairs, bd):
@@ -121,29 +189,49 @@ class BlurPlanner:
             ])
 
         self.critical_points = []
+
+        # self.fill_critical_points_centering()
+        self.fill_critical_points_interpolating()
         
+        self.bd = bd
+
+        # queried is a list of tuples of weights and thresholds potentially
+        self.queried = []
+
+    def fill_critical_points_centering(self):
         for [i, j] in self.pairs:
             self.critical_points.append((i[0], i[1]))
             self.critical_points.append((j[0], j[1]))
 
         buffer = []
         for point in self.critical_points:
-            center = self.n // 2
-            x = (point[0] + center) // 2
-            y = (point[1] + center) // 2 
-            buffer.append((x, y))
+            center = self.n / 2
+            midx = (point[0] + center) / 2
+            midy = (point[1] + center) / 2 
+
+            buffer.append((midx, midy))
 
         # Perhaps interpolate between points more so we can make the decay more
         # strict?
         for point in buffer:
             self.critical_points.append(point)
             
-        self.critical_points.append((self.n // 2, self.n // 2))
+        self.critical_points.append((self.n / 2, self.n / 2))
         
-        self.bd = bd
+    def fill_critical_points_interpolating(self):
+        for [i, j] in self.pairs:
+            leftx, lefty = i[0], i[1]
+            rightx, righty = j[0], j[1]
 
-        # queried is a list of tuples of weights and thresholds potentially
-        self.queried = []
+            midx, midy = (leftx + rightx) / 2, (lefty + righty) / 2
+            leftmidx, leftmidy = (leftx + midx) / 2, (lefty + midy) / 2
+            rightmidx, rightmidy = (rightx + midx) / 2, (righty + midy) / 2
+
+            self.critical_points.append((leftx, lefty))
+            self.critical_points.append((midx, midy))
+            self.critical_points.append((leftmidx, leftmidy))
+            self.critical_points.append((rightmidx, rightmidy))
+            self.critical_points.append((rightx, righty))
 
     def decay(self, dist):
         return 1 / (dist ** 2 + 1)
@@ -175,7 +263,7 @@ class BlurPlanner:
         prev = None
 
         best_threshold = 0
-        cap_threshold = 1
+        cap_threshold = 1.5
 
         for i, ok in enumerate(queryOutputs):
             if ok:
@@ -184,19 +272,28 @@ class BlurPlanner:
             else:
                 cap_threshold = min(cap_threshold, self.queried[i][1])
 
-        if not prev:
+        if q == 100:
             # Probably put something different for now but like in the case that
             # we initially do not achieve a filling that works we want to make
             # the threshold less strict
-            prev = ([1] * len(self.critical_points), 0.5)
+            prev = ([1] * len(self.critical_points), 0.3)
         else:
-            # Tweak the weights here I suppose we can binary search the threshold to optimize that I suppose and also we can potentially do some stuff with the coefficients? But that's kinda sus ngl
-            prev = (prev[0], (best_threshold + cap_threshold) / 2)
+            # Tweak the weights here I suppose we can binary search the
+            # threshold to optimize that I suppose and also we can potentially
+            # do some stuff with the coefficients? But that's kinda sus ngl
+
+            # Actually I'll hold off on tweaking the weights since that seems suboptimal
+            prev = ([1] * len(self.critical_points), (best_threshold + cap_threshold) / 2)
             # print(best_threshold, cap_threshold)
         
         self.queried.append(prev)
 
-        return self.render(prev[0], prev[1])
+        result = self.render(prev[0], prev[1])
+
+        # print("Threshold:", prev[1])
+        # pretty_print(result)
+
+        return result
 
 class SamplingPlanner:
     def setup(self, pairs, bd):
@@ -215,9 +312,12 @@ class SamplingPlanner:
         
         self.bd = bd
 
+        self.counts = [[0 for i in range(self.n)] for j in range(self.n)]
+        self.prev_sampled = []
+
         self.queried = []
 
-    def validate(self, query):
+    def validate(self, query, force=False):
         # Returns a pair of a boolean of whether or not its valid
         # Also potentially mutates in place the query to remove any isolated components that are not reached by DFS
         total_visited = [[False for i in range(self.n)] for j in range(self.n)]
@@ -225,7 +325,9 @@ class SamplingPlanner:
         point_list = list(self.pair_points)
 
         count = sum(query[i][j] for i in range(self.n) for j in range(self.n))
-        sparse = count < 80
+        # Okay dfsTarget is really inefficient so like unfortunately we just
+        # can't use it really
+        sparse = (count < 70 or force) and False
 
         # Due to how slow dfsTarget() is (which is really just a consequence of
         # what it's trying to do idk if you can really make it any faster) we
@@ -290,13 +392,19 @@ class SamplingPlanner:
 
         return right or left or up or down
 
-    def query(self, q, queryOutputs):
+    def query(self, q, queryOutputs, prev_query=None):
+        # If the previous query failed, we should update the counts
+        if not queryOutputs[-1]:
+            for (y, x) in self.prev_sampled:
+                self.counts[y][x] += 1
+
+        self.prev_sampled = []
         question = []
-        prev = None
+        prev = prev_query
 
         # Get last successful query
         for i, ok in enumerate(queryOutputs):
-            if ok:
+            if ok and prev_query is None:
                 prev = self.queried[i]
 
         if prev:
@@ -307,10 +415,13 @@ class SamplingPlanner:
 
         # 5 seems to work the best ngl
         # as sample size increases, it gets worse
-        sample_size = 5 # int(1 / self.bd)
+        # Perhaps we should just like decrease this over time as the number of
+        # queries runs out
+        sample_size = floor(log(q + 1, 3)) + 1 # 5 # int(1 / self.bd)
         failed = 0
             
-        open = [(i, j) for i in range(16) for j in range(16) if (i, j) not in self.pair_points and question[i][j] == 1]
+        open = [(y, x) for y in range(self.n) for x in range(self.n) if (y, x) not in self.pair_points and question[y][x] == 1]
+        weights = [count_to_weight(self.counts[y][x]) for (y, x) in open]
 
         # print("Preprint:")
         # pretty_print(question)
@@ -318,25 +429,31 @@ class SamplingPlanner:
 
         query = deepcopy(question)
 
-        while True:
+        while sample_size:
             # Trust
             query = deepcopy(question)
-            random.shuffle(open)
-            
-            sample = open[:sample_size]
+            # random.shuffle(open)
+            # sample = open[:sample_size]
+            sample = weighted_sampler(open, weights, sample_size)
     
             for i in sample:
                 query[i[0]][i[1]] = 0
 
-            if self.validate(query):
+            if self.validate(query, False):
+                self.prev_sampled = sample
+
                 break
             else:
                 failed += 1
 
-            if failed >= 10:
+            if failed >= 20:
                 failed = 0
                 sample_size = max(sample_size - 1, 0)
-                # Eventually this will stop query and such if we fail too many times but I don't expect that to happen really it probably won't fail that many times on sample_size = 1 probably hopefully. Just noting that this could possibly a place for more improvement in the future
+                # Eventually this will stop querying and such if we fail too
+                # many times but I don't expect that to happen really it
+                # probably won't fail that many times on sample_size = 1
+                # probably hopefully. Just noting that this could possibly a
+                # place for more improvement in the future
         
         self.queried.append(query)
 

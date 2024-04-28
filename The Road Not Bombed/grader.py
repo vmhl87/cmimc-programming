@@ -9,7 +9,7 @@ Modify the parameters below for different tasks
 
 # Task 1: p = 5, bd = 0.25
 p = 5  # number of cities
-bd = 0.25  # bomb density
+bd = 0.1  # bomb density
 
 # Task 2: p = 5, bd = 0.1
 # p = 5 # number of cities
@@ -25,7 +25,7 @@ bd = 0.25  # bomb density
 
 rng_grader = random.Random()  # use this for generating fixed setup
 # rng_grader.seed(19260817)
-rng_grader.seed(19290817)
+rng_grader.seed(19230817)
 
 # Flush output
 save_print = print
@@ -33,7 +33,7 @@ def print(*args):
     pass
 
 VERBOSE = False  # print more details
-LAST = True  # whether to print the last query made in each TC
+LAST = False  # whether to print the last query made in each TC
 n = 16  # board size is n*n
 q = 100  # number of queries
 
@@ -198,7 +198,7 @@ def dfsComponent(x, y, n, roads, visRoads):
     dfsComponent(x, y + 1, n, roads, visRoads)
 
 
-trials = 1
+trials = 20
 scores = []
 
 start_time = time.time()
@@ -207,6 +207,7 @@ for i in range(trials):
     pairs, bombs = generateSetup(n, p, bd)
 
     scores.append(runGrader(soln, pairs, bombs))
+    save_print(f"Trial {i + 1} finished.")
 
 end_time = time.time()
 
