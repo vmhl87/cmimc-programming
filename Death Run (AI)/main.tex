@@ -1,0 +1,77 @@
+\documentclass[a4paper, 12pt]{article}
+
+\usepackage{chirpstyle}
+
+\begin{document}
+
+\section*{Problem: Death Run}
+
+\subsection*{Notes About Problem}
+The actual graph has \( 15 \) layers each with a height of \( 8 \). The initial edge weights are chosen uniformly from \( [1, 10] \). There is a probability of \( 1/2 \) that there exists an edge between two vertices in two adjacent layers, and we guaranteed \textit{at least} (I think) an in-degree and out-degree of \( 1 \) for each of the middle vertices.
+
+Criminals can also pass turns, so you can force moves on players. Criminals may also target edges that go from the supersource vertex (like the very starting vertex).
+
+\subsection*{Ideas}
+
+\textbf{A Dijkstra's Solution}
+\begin{itemize}
+    \item On average, we expect there to be an out-degree of \( 8/2 = 4 \) for each vertex, although it certainly can be lower.
+    \item What is the expected value of the minimum of \( n \) random variables chosen uniformly from \( [1, 10] \)? Probably we won't need this though.
+    \item For the students, are we minimizing the individual scores (i.e. we want to get a very low score for any particular student and we can potentially sacrifice the others) or is there some concept of a total student score that we should try to minimize (i.e. we must do our best for all students overall so we may look for more equal values for all students). Perhaps this is a dumb question but I'm kinda hungry and can't think the best right now. \( \longrightarrow \) I have reason to believe that it's probably minimizing the student total given that's sort of how the criminal score is calculated.
+    \item Consider the very worse case(s): what should we do from here?
+    \item I suppose one very bad case would be that each in-degree and out-degree are exactly \( 1 \). In this case, the position of the student directly determines where they will end up next, meaning that the criminals can probably do bad things idk.
+    \item Without criminals meddling, a crude expectation (probably not the actual) for the student score in this case is likely something like \( 11/2 \cdot 15 = 82.5 \), and this can be improved upon potentially in this example with maybe DFS or more generally Dijkstra's or something idk. In the worst case of course, we get hit with the whole \( 200 \cdot 8 = 1600 \) combined penalty from the criminals across all students but perhaps that's only if we do something really dumb.
+    \item Actually in this worst case scenario, no matter what the biggest the criminal score can get without considering the initially determined edge weights is the full \( 200 \) (but only once and not multiple times which isn't terrible). This is done by putting every study on one of the tracks and then no matter what strategy the criminals use, they will only ever get \( 200 \) score.
+    \item The whole height of \( 8 \) and number of students being \( 8 \) is a little sus. Should we really start each student at a different location? Or does it make sense for us to have all students following the same path? Also there being \( 2 \cdot 8 - 1 = 15 \) layers is potentially sus hmmmmmm.
+    \item Since we're going for a heuristic thing and it doesn't have to be an absolutely perfect thing, we can do as follows: check if there exists a path through the graph such that the out-degree of all vertice is strictly greater than \( 2 \). If this exists, then we're golden because the criminals cannot possibly add any penalty. Obviously we have no choice but to take the initial edge weights, but to be honest this is not terrible at all. There is also the case that there exists no path. I'm not exactly sure the probability that this is the case but we can maybe get a lower bound?
+        \[
+            P(\text{no three path}) < P(\text{no threes at all}) = (36/256)^{8 \cdot 15} = \text{astronomically small}
+        ,\]
+        so maybe that's not quite useful hmmm idk. Perhaps a better approximation would be
+        \begin{align*}
+            P(\text{no three path}) &\approx 1 - P(\text{all layers has at least one three vertex}) \\
+            &= 1 - P(\text{a layer has at least one three vertex})^{15} \\
+            &= 1 - (1 - (36 / 256)^8)^{15} \\
+            &\approx 2.294 \times 10^{-6}
+        .\end{align*}
+        Perhaps I've done this calculation very wrong but I suppose we shall have to live with it. This tells us that not having a three path is probably decently rare? Although despite this we still need to deal with the case when it doesn't exist. This is a future Rushil problem but it probably just revolves around taking the path with the highest out-degrees possible potentially. Perhaps if we make this into a problem of first optimizing for paths that include the most number of three vertices and then optimizing based on the initial edge weights (or some combination between them idk dawg) this could work.
+
+    \item As for determining whether there is a three path, we can probably just create a new graph and DFS on it ngl.
+    \item Of course, the above is with working from the student perspective but we'll probably also be able to use this outlook to code the worst case handling for the criminal. 
+    \item With this, most of the work then goes to finding how to do this for really worst case scenario graphs.
+
+    \item Okay okay but a problem with the three path thing is that if there is a single three path, the criminal may first block the supersource edge connecting to that three path.
+
+    \item I suppose to handle this and other things, we can create a new graph after the criminal's first move and then DFS/Dijkstra's from there or something. But then the players don't exactly spread out which is hmmmm.
+
+    \item Should we make the assumption that the criminals will always greedily place the penalty on the edge that will be traversed by the most students?
+
+    \item Okay yeah I think for the students the best way of handling this is creating a new graph with the optimal edge weights corresponding to the best choices (you know what I mean dawg) and then going from there we want to Dijkstra's or something? I'm not sure this takes into account the limited budgeting though which is interesting. But this will certainly avoid all the like \( 1 \) out-degree vertices and all that not good stuff. We'll likely have to compute the new graph for every move though since like it'll be annoying to keep track of all the moving parts and the changing budget with some precomputed graph.
+\end{itemize}
+
+\textbf{Minimax?}
+\begin{itemize}
+    \item While I believe there are some good ideas above for both strategies, some of it is kinda hand-wavy and I think there definitely is room for improvement, so I'm thinking we try something that is more brute forcey and covers a whole lot more cases. As such, minimax is probably something to consider.
+    \item I think actually the greedy-esque criminal strategy that we have works well, so we'll probably apply the minimax part to the student, although I'll see if we can improve on the criminal strategy as well.
+    \item The only problem with a brute force strategy like minimax is that its time complexity is actually garbage. Since there are at most \( h \) choices and \( l \) layers, the time complexity should be something like \( O(h^l) \). For \( h = 8 \) and \( l = 15 \), this is absolutely not doable. This motivates one to shift strategy to using minimax later in the graph or at the very least just not recurse to the very end of the graph (although is this dangerous? hmmmmmmmmmm it's probably fine we'll see if it's doable). To get an idea of what is a doable depth, we can just use some math idk.
+        \[
+            h^l \le 10^9 \implies l \le 9\log_h{10}
+        ,\]
+        so for \( h = 8 \), we get that \( l \) should be less than \( 10 \). We will probably put it at like \( 8 \) or \( 9 \) though because Python is pretty slow ngl.
+
+    \item If we're placing an edge does it only really makes sense to place it on the current layer? Should we expand our options? Because like if there are only a couple edges leading to a win then like can't we just place all our weight on those equally and then get guaranteed like literally a bunch of weight? Perhaps we'll have that as initial check because that seems pretty wild. That being said, it'll be kinda rare since the expected number of edges will be something \( 4 \cdot 8 = 32 \) and since we only really have like \( 15 \) moves to place everything so that'll be a thing for sure. The probability that this actually happens is like roughly \( 1 \times 10^{-5} \) so yeah that's probably not happening. But it does raise a good question of like whether or not this part of some more general better strategy. I suppose for now \textbf{we will assume that placing weight on an edge in another layer than the current gives negligible improvement}. I don't have any way of knowing this, but it surely simplifies a lot
+
+    \item The only trouble I'm having with imagining a minimax solution is that the choices of the criminal are far more varied than the student. For a greedy strategy, the choices of the criminal for any vertex are deterministic but like when it comes to a non-greedy strategy that isn't necessarily the case. I suppose what one can do is give the criminal the choice to do nothing that turn. But also there's the question of like whether or not using budget to like force players into another sequence but like maybe I shouldn't consider that right now because this is just a heuristic game.
+
+    \item Wait I just realized is our criminal performing terrible because we add weights so that the least two weighted edges are equal? And so people choose a random edge? Surely not right surely I don't just have to subtract a little bit so people are forced to pick my edge surely not right.
+
+    \item Wait since both the student and criminal choose an edge for their turn, is the time complexity actually \( O(h^{2l}) \)? That's a little bit annoying but oh well we'll see. I mean \( h = 8 \) is like worst case because it's certainly more likely to have a lower number of edges but yeah idk we'll see (should I do time complexity based on the expected value for \( h \) instead? in this case like a depth of \( 7 \) still seems to work).
+
+    \item Also there is like the really not fun problem of like there being two criminals so we may also to choose for two of them. But I mean like if we really want to simplify things we can just make both of them move to the same place. Actually no that probably doesn't make much sense hmmmmmmmmmmm.
+
+    \item Okay if we're optimizing for the student strategy we can eliminate choices for the criminal by simply just assuming the worst case scenario that the criminals just target that student (and thus only make choices at the vertex that student is currently on).
+
+    \item For the criminal strategy itself, what is written up above kinda doesn't really work but like trust we can make the simplifying assumption that we should just choose whichever vertex has the most students on it. This will potentially be suboptimal but like we don't really have a choice do we idk. If the performance isn't too bad we can go through and consider all possible moves but like that seems really bad ngl.
+\end{itemize}
+
+\end{document}

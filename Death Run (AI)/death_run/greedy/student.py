@@ -5,8 +5,8 @@ import random
 
 class BasedStudent:
     def __init__(
-        self, edge_list: list[tuple[int, int, int]], begin: int, ends: list[int]
-    ) -> None:
+        self, edge_list
+    ):
         """
         :param edge_list: A list of tuples representing the edge list of the graph. Tuples are of the
         form (u, v, w), where (u, v) specifies that an edge between vertices u and v exist, and w is the
@@ -18,10 +18,10 @@ class BasedStudent:
 
     def strategy(
         self,
-        edge_updates: dict[tuple[int, int], int],
-        vertex_count: dict[int, int],
-        current_vertex: int,
-    ) -> int:
+        edge_updates,
+        vertex_count,
+        current_vertex
+    ):
         """
         :param edge_updates: A dictionary where the key is an edge (u, v) and the value is how much that edge's weight increased in the current round.
         Note that this only contains information about edge updates in the current round, and not previous rounds.
@@ -161,7 +161,7 @@ class BaseStudent(BasedStudent):
         path = dijkstras(graph, current_vertex)
 
         i = 15 * 8 + 1
-        
+
         while path[i] != current_vertex:
             i = path[i]
        

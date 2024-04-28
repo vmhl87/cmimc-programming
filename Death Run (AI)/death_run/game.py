@@ -1,19 +1,26 @@
+import matplotlib
+matplotlib.use("tkagg")
+
 import json
 import random
 import networkx as nx
 from graph import generate_graph, edge_list_to_nx
-from criminal import BaseCriminal, RandomCriminal
-from student import BaseStudent, RandomStudent
+from greedy.criminal import BaseCriminal as GreedyCriminal
+from greedy.criminal import RandomCriminal
+from greedy.student import BaseStudent as GreedyStudent
+from greedy.student import RandomStudent
+from minimax.student import BaseStudent as MinimaxStudent
 
 jsonify = lambda d: {str(k): v for k, v in d.items() if v}
 
+VERBOSE = False
 
 def play(
-    edge_list: list[tuple[int, int, int]],
-    begin: int,
-    ends: list[int],
-    criminals: list[tuple[str, BaseCriminal]],
-    students: list[tuple[str, BaseStudent]],
+    edge_list,
+    begin,
+    ends,
+    criminals,
+    students,
 ):
     """Plays a game of Death Run 2."""
     criminals = [
@@ -59,6 +66,10 @@ def play(
             (u, v, w) = criminal.strategy(
                 edge_updates, vertex_count, criminal_budgets[i]
             )
+
+            if VERBOSE:
+                print(name, "puts", (u, v), "->", w)
+
             criminal_match_data[name].append(
                 (
                     (
@@ -80,6 +91,10 @@ def play(
         # Students turn
         for i, (name, student) in enumerate(students):
             v = student.strategy(next_edge_updates, vertex_count, student_pos[i])
+
+            if VERBOSE:
+                print(name, "moves", student_pos[i], "->", v)
+
             student_match_data[name].append(
                 (
                     (
@@ -93,6 +108,9 @@ def play(
 
             # Check that edge exists, o.w. take random out-edge
             if (student_pos[i], v) not in edge_updates:
+                if VERBOSE:
+                    print(name, "is delulu")
+
                 v = random.choice(
                     [
                         x
@@ -123,9 +141,12 @@ def play(
 # Edit the below
 if __name__ == "__main__":
     edge_list, begin, ends = generate_graph((15, 8), (1, 10), path="game.png")
+    # edge_list, begin, ends = generate_graph((4, 4), (1, 10), path="game.png")
 
-    criminals = [("Random Criminal #1", RandomCriminal)]
-    students = [("Random Student #1", RandomStudent)]
+    criminals = [("Greedy Criminal #1", GreedyCriminal), ("Greedy Criminal #2", GreedyCriminal)]
+    students = [("Greedy Student", GreedyStudent), ("Minimax Student", MinimaxStudent)]
+    # criminals = [("Random Criminal", RandomCriminal)]
+    # students = [("Random Student", RandomStudent), ("Minimax Student", MinimaxStudent)]
 
     criminal_scores, student_scores = play(edge_list, begin, ends, criminals, students)
 
@@ -137,6 +158,7 @@ if __name__ == "__main__":
             criminal_scores.items(), key=lambda item: item[1], reverse=True
         )
     }
+
     student_scores = {
         k: v for k, v in sorted(student_scores.items(), key=lambda item: item[1])
     }
