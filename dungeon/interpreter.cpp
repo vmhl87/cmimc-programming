@@ -100,7 +100,7 @@ int main(int argc,char *argv[]){
 			else buf[o]=buf[o]*10+x-'0';
 		}
 	}
-	int days=10000;
+	int days=100000;
 	if(argc>4){
 		days=stoi(argv[4]);
 		cout<<CY<<"Running on maximum "<<days<<" days\n"<<NE;
@@ -109,12 +109,12 @@ int main(int argc,char *argv[]){
 		xbound[]={radius,radius},ybound[]={radius,radius};
 	bool halt=0;
 	while(days--){
-		if(a[0]<0||a[0]>=radius<<1){
+		if(a[0]<0||a[0]>=(radius<<1)||a[1]<0||a[1]>=(radius<<1)){
 			cout<<RE<<"Alice out of bounds - "<<a[0]-radius<<','
 				<<a[1]-radius<<NE<<'\n';
 			break;
 		}
-		if(b[0]<0||b[0]>=radius<<1){
+		if(b[0]<0||b[0]>=(radius<<1)||b[1]<0||b[1]>=(radius<<1)){
 			cout<<RE<<"Bob out of bounds - "<<b[0]-radius
 				<<','<<b[1]-radius<<NE<<'\n';
 			break;
