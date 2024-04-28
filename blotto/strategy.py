@@ -47,9 +47,13 @@ stat = 0
 oa = 0
 oe = 0
 jl = False
+dr = 0
 
 def strategy_heuristic(ally: list, enemy: list, offset: int) -> int:
-    global stat, oa, oe, jl
+    global stat, oa, oe, jl, dr
+    if dr != 0:
+        if offset == 0: dr = 0
+        else: return dr
     defense = 3
     sac = 1.8
     if stat > 5: sac = 1
@@ -58,10 +62,12 @@ def strategy_heuristic(ally: list, enemy: list, offset: int) -> int:
     if offset == 0:
         jl = False
         # triage
-        if enemy[3] > ally[3] * sac:
+#        if enemy[3] > ally[3] * sac:
+        if enemy[3] > ally[2] + ally[3] + ally[4]:
             stat = 0
             jl = True
-            return 1 if random.random() > .5 else -1
+            dr = 1 if random.random() > .5 else -1
+            return dr
         # if tower already holds majority then offload
         if random.random() < (ally[3] - enemy[3] -1 -
                 (enemy[2]+enemy[4])*defense)/ally[3]:
