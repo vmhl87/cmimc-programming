@@ -78,8 +78,8 @@ int main(int argc,char *argv[]){
 		else states[c]=e;
 	}
 	int radius=100;
-	if(argc>3){
-		radius=stoi(argv[3]);
+	if(argc>4){
+		radius=stoi(argv[4]);
 		cout<<CY<<"Using radius "<<radius<<NE<<'\n';
 	}
 	++radius;
@@ -107,8 +107,8 @@ int main(int argc,char *argv[]){
 		}
 	}
 	int days=100000;
-	if(argc>4){
-		days=stoi(argv[4]);
+	if(argc>3){
+		days=stoi(argv[3]);
 		cout<<CY<<"Running on maximum "<<days<<" days\n"<<NE;
 	}
 	bool halt=0;
