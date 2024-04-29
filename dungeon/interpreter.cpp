@@ -83,6 +83,8 @@ int main(int argc,char *argv[]){
 		cout<<CY<<"Using radius "<<radius<<NE<<'\n';
 	}
 	++radius;
+	int a[]={radius,radius},b[]={radius,radius},
+		xbound[]={radius,radius},ybound[]={radius,radius};
 	vector<vector<int>> board(radius<<1,vector<int>(radius<<1,0));
 	if(argc>2){
 		int buf[]={0,0,0},sign=1;
@@ -94,6 +96,10 @@ int main(int argc,char *argv[]){
 				++o;
 			}else if(x==' '){
 				board[buf[0]+radius][buf[1]+radius]=buf[2];
+				xbound[0]=(buf[0]+radius<xbound[0]?buf[0]+radius:xbound[0]);
+				xbound[1]=(buf[0]+radius>xbound[1]?buf[0]+radius:xbound[1]);
+				ybound[0]=(buf[1]+radius<ybound[0]?buf[1]+radius:ybound[0]);
+				ybound[1]=(buf[1]+radius>ybound[1]?buf[1]+radius:ybound[1]);
 				for(int i=0;i<3;++i)buf[i]=0;
 				o=0;
 			}else if(x=='-')sign=-1;
@@ -105,8 +111,6 @@ int main(int argc,char *argv[]){
 		days=stoi(argv[4]);
 		cout<<CY<<"Running on maximum "<<days<<" days\n"<<NE;
 	}
-	int a[]={radius,radius},b[]={radius,radius},
-		xbound[]={radius,radius},ybound[]={radius,radius};
 	bool halt=0;
 	while(days--){
 		if(a[0]<0||a[0]>=(radius<<1)||a[1]<0||a[1]>=(radius<<1)){
@@ -141,6 +145,8 @@ int main(int argc,char *argv[]){
 			break;
 		}
 	}
+	--xbound[0];--ybound[0];
+	++xbound[1];++ybound[1];
 	if(xbound[1]>=radius<<1)xbound[1]=(radius<<1)-1;
 	if(ybound[1]>=radius<<1)ybound[1]=(radius<<1)-1;
 	if(xbound[0]<0)xbound[0]=0;
@@ -149,8 +155,11 @@ int main(int argc,char *argv[]){
 		for(int j=xbound[0];j<=xbound[1];++j){
 			if(j==a[0]&&i==a[1])cout<<YL;
 			else if(j==b[0]&&i==b[1])cout<<GR;
-			if(board[j][i]==0)cout<<'_';
-			else cout<<board[j][i];
+			if(board[j][i]==0){
+				if(j==a[0]&&i==a[1])cout<<'x';
+				else if(j==b[0]&&i==b[1])cout<<'x';
+				else cout<<'_';
+			}else cout<<board[j][i];
 			cout<<NE;
 		}
 		cout<<'\n';

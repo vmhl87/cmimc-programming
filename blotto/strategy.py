@@ -14,7 +14,7 @@ bias = 0
 
 def strategy_heuristic(ally: list, enemy: list, offset: int) -> int:
     global bias
-    spon = 0.3
+    spon = 1
     if bias != 0:
         if offset == bias:
             if random.random() < (enemy[3+offset] - ally[3+offset] + 1)/ally[3]:
@@ -30,16 +30,16 @@ def strategy_heuristic(ally: list, enemy: list, offset: int) -> int:
             if random.random() < (ally[3] - enemy[3] - defense*(enemy[2] + enemy[4]) - 2)/ally[3]:
                 return 1 if random.random() < 0.5 else -1
             return 0
-        if enemy[3] > ally[3] + ally[2] + ally[4] + ally[1] + ally[5]:
+        if enemy[3] + defense*(enemy[2] + enemy[4]) > ally[3] + ally[2] + ally[4] + ally[1] + ally[5]:
             bias = 1 if random.random() < 0.5 else -1
             return bias
         return 0
     # if closest tower needs allies gravitate
-    if enemy[3+offset] > ally[3+offset]:
+    if enemy[3+offset] >= ally[3+offset]:
         if random.random() < (enemy[3+offset] - ally[3+offset] + 1)/ally[3]:
             return offset
     # if farther tower needs allies gravitate
-    if enemy[3-offset*2] > ally[3-offset*2]:
+    if enemy[3-offset*2] >= ally[3-offset*2]:
         if random.random() < (enemy[3+offset*2] - ally[3+offset*2] + 1)/ally[3]:
             return -offset
     # randomwalk
