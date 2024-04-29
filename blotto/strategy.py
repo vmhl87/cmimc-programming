@@ -25,7 +25,7 @@ def strategy_heuristic(ally: list, enemy: list, offset: int) -> int:
                 bias = 0
         return bias
     if offset == 0:
-        defense = 0.7
+        defense = 0.9
         if enemy[3] + defense*(enemy[2] + enemy[4]) < ally[3]:
             if random.random() < (ally[3] - enemy[3] - defense*(enemy[2] + enemy[4]) - 2)/ally[3]:
                 return 1 if random.random() < 0.5 else -1
