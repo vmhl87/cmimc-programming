@@ -1,6 +1,7 @@
 from random import randint
 
-MINIMAX_DEPTH = 4
+# Perhaps it's TLE-ing?
+MINIMAX_DEPTH = 3
 
 def pretty_print(graph):
     for i in graph:
@@ -61,7 +62,7 @@ class CriminalStrategy:
 
     def do_move(self, move):
         self.budget -= move[2]
-        assert self.budget >= 0
+        # assert self.budget >= 0
 
         self.base.penalties[move[0]][move[1]].append(move[2])
 
@@ -147,17 +148,13 @@ class BaseStudent:
             return best_state
 
     def strategy(self, edge_updates, vertex_count, current_index):
-        if current_index in self.targets:
-            # I wonder if this is needed
-            return None
-
         self.student.pos = current_index
 
-        # This should update the stuff in the other strategy objects because
-        # pass by reference trust trust
-        for update in edge_updates:
-            self.penalties[update[0]][update[1]].append(edge_updates[update])
+        for i, update in enumerate(edge_updates):
+            criminal = self.our_criminal if i % 2 == 0 else self.their_criminal
+            criminal.do_move((update[0], update[1], edge_updates[update]))
 
         state = self.minimax(False, True)
+        # assert state.to in self.graph[current_index]
 
         return state.to

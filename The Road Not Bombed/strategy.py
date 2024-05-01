@@ -105,6 +105,8 @@ import sys
 
 # Wow I really need to stop yapping fr.
 
+# TODO: Maybe make the sample size a function of how many roads are still selected as well rather than just solely the number of samples we have
+
 # Weighting type 1
 def count_to_weight(count):
     if count >= 5:

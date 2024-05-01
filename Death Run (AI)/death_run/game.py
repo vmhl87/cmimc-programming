@@ -1,5 +1,5 @@
-import matplotlib
-matplotlib.use("tkagg")
+# import matplotlib
+# matplotlib.use("tkagg")
 
 import json
 import random
@@ -10,10 +10,11 @@ from greedy.criminal import RandomCriminal
 from greedy.student import BaseStudent as GreedyStudent
 from greedy.student import RandomStudent
 from minimax.student import BaseStudent as MinimaxStudent
+from minimax.criminal import BaseCriminal as MinimaxCriminal
 
 jsonify = lambda d: {str(k): v for k, v in d.items() if v}
 
-VERBOSE = False
+VERBOSE = True
 
 def play(
     edge_list,
@@ -68,6 +69,9 @@ def play(
             )
 
             if VERBOSE:
+                # print()
+                # print("Current vertex:")
+                # criminal.output_current_vertex()
                 print(name, "puts", (u, v), "->", w)
 
             criminal_match_data[name].append(
@@ -135,6 +139,8 @@ def play(
     criminal_scores = {criminals[k][0]: v for k, v in criminal_scores.items()}
     student_scores = {students[k][0]: v for k, v in student_scores.items()}
 
+    # print(student_match_data)
+
     return criminal_scores, student_scores
 
 
@@ -143,10 +149,11 @@ if __name__ == "__main__":
     edge_list, begin, ends = generate_graph((15, 8), (1, 10), path="game.png")
     # edge_list, begin, ends = generate_graph((4, 4), (1, 10), path="game.png")
 
-    criminals = [("Greedy Criminal #1", GreedyCriminal), ("Greedy Criminal #2", GreedyCriminal)]
-    students = [("Greedy Student", GreedyStudent), ("Minimax Student", MinimaxStudent)]
-    # criminals = [("Random Criminal", RandomCriminal)]
-    # students = [("Random Student", RandomStudent), ("Minimax Student", MinimaxStudent)]
+    criminals = [("Minimax Criminal", MinimaxCriminal), ("Greedy Criminal", GreedyCriminal)]
+    # criminals = [("Greedy Criminal", GreedyCriminal)]
+    # criminals = [("Minimax Criminal", MinimaxCriminal)]
+    # students = [("Greedy Student", GreedyStudent)]
+    students = [("Random Student", RandomStudent), ("Minimax Student", MinimaxStudent)]
 
     criminal_scores, student_scores = play(edge_list, begin, ends, criminals, students)
 

@@ -1,6 +1,6 @@
 import random
 import networkx as nx
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 
 def generate_graph(
@@ -70,6 +70,7 @@ def generate_graph(
         prev_layer = curr_layer
         layers.append(prev_layer)
 
+    """
     if path:
         pos = {0: (0, 0)}
         for i in range(1, w + 1):
@@ -80,6 +81,7 @@ def generate_graph(
         nx.draw(G, pos, with_labels=True)
         plt.savefig(path)
         plt.close()
+    """
 
     return edge_list, 0, prev_layer
 
